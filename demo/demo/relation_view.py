@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+from logging import Logger
 from django.shortcuts import render
 from django.http import HttpResponse
 from toolkit.pre_load import neo_con
@@ -34,7 +36,7 @@ def search_entity(request):
 		#连接数据库
 		db = neo_con
 		entityRelation = db.getEntityRelationbyEntity(entity)
-		if len(entityRelation) == 0:
+		if not entityRelation:#len(entityRelation) == 0:
 			#若数据库中无法找到该实体，则返回数据库中无该实体
 			ctx= {'title' : '<h1>数据库中暂未添加该实体</h1>'}
 			return render(request,'entity.html',{'ctx':json.dumps(ctx,ensure_ascii=False)})
@@ -42,6 +44,10 @@ def search_entity(request):
 			#返回查询结果
 			#将查询结果按照"关系出现次数"的统计结果进行排序
 			entityRelation = sortDict(entityRelation)
+
+			print("@"*20)
+			print(json.dumps(entityRelation,ensure_ascii=False))
+			print("@"*20)
 
 			return render(request,'entity.html',{'entityRelation':json.dumps(entityRelation,ensure_ascii=False)})
 

@@ -29,7 +29,9 @@ def tagging(request):
 		while(True):
 			documents_count = collection.count()
 			rint = random.randint(0,documents_count-1)
-			result = collection.find_one(skip = rint )
+			result = collection.match_one(skip = rint )
+			print("+"*10)
 			print(result)
+			print("+"*10)
 			if(len(result) == 7 ):
 				return render(request,'taggingSentences.html',{"result": result})

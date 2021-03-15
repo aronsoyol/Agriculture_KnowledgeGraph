@@ -13,12 +13,12 @@ class Neo4j():
 		self.graph = Graph("http://localhost:7474", username="neo4j", password="8313178")
 		
 	def matchItembyTitle(self,value):
-		answer = self.graph.find_one(label="Item",property_key="title",property_value=value)
+		answer = self.graph.match_one(label="Item",property_key="title",property_value=value)
 		return answer
 
 	# 根据title值返回互动百科item
 	def matchHudongItembyTitle(self,value):
-		answer = self.graph.find_one(label="HudongItem",property_key="title",property_value=value)
+		answer = self.graph.match_one(label="HudongItem",property_key="title",property_value=value)
 		return answer
 		
 	# 返回所有已经标注过的互动百科item   filename为labels.txt
@@ -27,7 +27,7 @@ class Neo4j():
 		List = []
 		i = 0
 		for line in labels:
-			ctx = self.graph.find_one(label="HudongItem",property_key="title",property_value=line[0])
+			ctx = self.graph.match_one(label="HudongItem",property_key="title",property_value=line[0])
 			if ctx == None:
 				continue;
 			cur = HudongItem(ctx)
@@ -50,7 +50,7 @@ class Neo4j():
 		
 #test = Neo4j()
 #test.connectDB()
-#answer = test.graph.find_one(label="HudongItem",property_key="title",property_value='火龙果')
+#answer = test.graph.match_one(label="HudongItem",property_key="title",property_value='火龙果')
 #print(answer)
 #a = test.getLabeledHudongItem('labels.txt')
 #print(a[10].openTypeList)

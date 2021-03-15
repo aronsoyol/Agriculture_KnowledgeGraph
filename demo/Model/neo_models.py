@@ -1,17 +1,21 @@
-from py2neo import Graph, Node, Relationship, cypher, Path
-import neo4j
+from py2neo import Graph, Node, Relationship, cypher, Path, NodeMatcher
+# import neo4j
+
 class Neo4j():
 	graph = None
 	def __init__(self):
 		print("create neo4j class ...")
 
+
 	def connectDB(self):
-		self.graph = Graph("http://localhost:7474", username="neo4j", password="123456")
+		self.graph = Graph("http://localhost:7474", username="neo4j", password="8313178")
 
 	def matchItembyTitle(self,value):
 
 		sql = "MATCH (n:Item { title: '" + str(value) + "' }) return n;"
 		answer = self.graph.run(sql).data()
+		# node=Node("Item", title=value)
+		# answer = self.graph.match_one(node)
 		return answer
 
 	# 根据title值返回互动百科item
@@ -25,14 +29,46 @@ class Neo4j():
 
 	# 根据entity的名称返回关系
 	def getEntityRelationbyEntity(self,value):
-		answer = self.graph.run("MATCH (entity1) - [rel] -> (entity2)  WHERE entity1.title = \"" +str(value)+"\" RETURN rel,entity2").data()
+		answer = self.graph.run("MATCH (entity1) <- [rel] -> (entity2)  WHERE entity1.title = \"" +str(value)+"\" RETURN entity1,rel,entity2").data()
 		return answer
 
 	#查找entity1及其对应的关系（与getEntityRelationbyEntity的差别就是返回值不一样）
+	# def findRelationByEntity(self,entity1):
+	# 	answer = self.graph.run("MATCH (n1 {title:\""+str(entity1)+"\"})- [rel] -> (n2) RETURN n1,rel,n2" ).data()
+	# 	# if(answer is None):
+	# 	# 	answer = self.graph.run("MATCH (n1:NewNode {title:\""+entity1+"\"})- [rel] -> (n2) RETURN n1,rel,n2" ).data()
+	# 	# node=Node("HudongItem", title=value)
+	# 	matcher_1 = NodeMatcher(self.graph)
+	# 	answer = matcher_1.match("HudongItem", title=value).limit(1)
+	# 	# answer = self.graph.match((node, ))
+	# 	# return answer
+	# 	str_answer = str(answer)
+	# 	nodes = list(answer)
+	# 	if len(nodes) >0:
+	# 		return nodes[0]
+	# 	else:
+	# 		return None
+
+
+	def matchHudongItembyName(self,value):
+    		# node=Node("HudongItem", title=value)
+		matcher_1 = NodeMatcher(self.graph)
+		answer = matcher_1.match("HudongItem", name=value).limit(1)
+		# answer = self.graph.match_one((node,))
+
+		return dict(answer)
+
+	# 根据entity的名称返回关系
+	def getEntityRelationbyEntity(self,value):
+		answer = self.graph.run("MATCH (entity1) - [rel] -> (entity2)  WHERE entity1.title = \"" +value +"\" RETURN rel,entity2")
+		print(dir(answer), type(answer))
+		return [dict(a) for a in list(answer)]
+
+	#查找entity1及其对应的关系（与getEntityRelationbyEntity的差别就是返回值不一样）
 	def findRelationByEntity(self,entity1):
-		answer = self.graph.run("MATCH (n1 {title:\""+str(entity1)+"\"})- [rel] -> (n2) RETURN n1,rel,n2" ).data()
-		# if(answer is None):
-		# 	answer = self.graph.run("MATCH (n1:NewNode {title:\""+entity1+"\"})- [rel] -> (n2) RETURN n1,rel,n2" ).data()
+		answer = self.graph.run("MATCH (n1:HudongItem {title:\""+entity1+"\"})- [rel] -> (n2) RETURN n1,rel,n2" )
+		if(len(answer) == 0):
+			answer = self.graph.run("MATCH (n1:NewNode {title:\""+entity1+"\"})- [rel] -> (n2) RETURN n1,rel,n2" )
 		return answer
 
 	#查找entity2及其对应的关系
@@ -41,6 +77,9 @@ class Neo4j():
 
 		# if(answer is None):
 		# 	answer = self.graph.run("MATCH (n1)- [rel] -> (n2:NewNode {title:\""+entity1+"\"}) RETURN n1,rel,n2" ).data()
+		# answer = self.graph.run("MATCH (n1)- [rel] -> (n2:HudongItem {title:\""+entity1+"\"}) RETURN n1,rel,n2" )
+		# if(len(answer) == 0):
+		# 	answer = self.graph.run("MATCH (n1)- [rel] -> (n2:NewNode {title:\""+entity1+"\"}) RETURN n1,rel,n2" )
 		return answer
 
 	#根据entity1和关系查找enitty2
@@ -48,6 +87,9 @@ class Neo4j():
 		answer = self.graph.run("MATCH (n1 {title:\"" + str(entity) + "\"})- [rel {type:\""+str(relation)+"\"}] -> (n2) RETURN n1,rel,n2" ).data()
 		#if(answer is None):
 		#	answer = self.graph.run("MATCH (n1:NewNode {title:\"" + entity + "\"})- [rel:RELATION {type:\""+relation+"\"}] -> (n2) RETURN n1,rel,n2" ).data()
+		# answer = self.graph.run("MATCH (n1:HudongItem {title:\"" + entity + "\"})- [rel:RELATION {type:\""+relation+"\"}] -> (n2) RETURN n1,rel,n2" )
+		# if(len(answer) == 0):
+		# 	answer = self.graph.run("MATCH (n1:NewNode {title:\"" + entity + "\"})- [rel:RELATION {type:\""+relation+"\"}] -> (n2) RETURN n1,rel,n2" )
 
 		return answer
 
@@ -56,6 +98,9 @@ class Neo4j():
 		answer = self.graph.run("MATCH (n1)- [rel {type:\""+str(relation)+"\"}] -> (n2 {title:\"" + str(entity) + "\"}) RETURN n1,rel,n2" ).data()
 		#if(answer is None):
 		#	answer = self.graph.run("MATCH (n1)- [rel:RELATION {type:\""+relation+"\"}] -> (n2:NewNode {title:\"" + entity + "\"}) RETURN n1,rel,n2" ).data()
+		# answer = self.graph.run("MATCH (n1)- [rel:RELATION {type:\""+relation+"\"}] -> (n2:HudongItem {title:\"" + entity + "\"}) RETURN n1,rel,n2" )
+		# if(len(answer) == 0):
+		# 	answer = self.graph.run("MATCH (n1)- [rel:RELATION {type:\""+relation+"\"}] -> (n2:NewNode {title:\"" + entity + "\"}) RETURN n1,rel,n2" )
 
 		return answer
 
@@ -98,6 +143,12 @@ class Neo4j():
 			answer = self.graph.run("MATCH (n1:NewNode {title:\"" + str(entity1) + "\"})- [rel:RELATION {type:\""+str(relation)+"\"}] -> (n2:HudongItem{title:\""+entity2+"\"}) RETURN n1,rel,n2" ).data()
 		if(answer is None):
 			answer = self.graph.run("MATCH (n1:NewNode {title:\"" + str(entity1) + "\"})- [rel:RELATION {type:\""+str(relation)+"\"}] -> (n2:NewNode{title:\""+entity2+"\"}) RETURN n1,rel,n2" ).data()
+		answer = self.graph.run("MATCH (n1:HudongItem {title:\"" + entity1 + "\"})- [rel] -> (n2:HudongItem{title:\""+entity2+"\"}) RETURN n1,rel,n2" )
+		if(len(answer) == 0):
+			answer = self.graph.run("MATCH (n1:HudongItem {title:\"" + entity1 + "\"})- [rel] -> (n2:NewNode{title:\""+entity2+"\"}) RETURN n1,rel,n2" )
+		if(len(answer) == 0):
+			answer = self.graph.run("MATCH (n1:NewNode {title:\"" + entity1 + "\"})- [rel] -> (n2:HudongItem{title:\""+entity2+"\"}) RETURN n1,rel,n2" )
+		if(len(answer) == 0):
+			answer = self.graph.run("MATCH (n1:NewNode {title:\"" + entity1 + "\"})- [rel] -> (n2:NewNode{title:\""+entity2+"\"}) RETURN n1,rel,n2" )
 
 		return answer
-

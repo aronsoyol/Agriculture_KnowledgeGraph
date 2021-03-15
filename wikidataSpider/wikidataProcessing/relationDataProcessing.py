@@ -29,13 +29,13 @@ class loadDatatoNeo4j(object):
 							entity1 = entityRelationJson['entity1']
 							entity2 = entityRelationJson['entity2']
 							#搜索entity1
-							find_entity1_result = self.graph.find_one(
+							find_entity1_result = self.graph.match_one(
 								property_key = "title" ,
 								property_value = entity1,
 								label = "HudongItem"
 							)
 							#搜索entity2
-							find_entity2_result = self.graph.find_one(
+							find_entity2_result = self.graph.match_one(
 								property_key = "title",
 								property_value = entity2,
 								label = "HudongItem"
